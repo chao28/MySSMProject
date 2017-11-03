@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.smbms.mapper.ProMapper">
+	<!-- 获取供应商列表 -->
+	<select id="findProviderAll" resultType="Provider">
+		select * from smbms_provider
+	</select>
+	<!-- 动态查询 -->
+	<select id="findProAll" resultType="Provider" parameterType="hashMap">
+		SELECT * FROM smbms_provider
+		<where>
+			<if test="proCode != null">
+				AND proCode LIKE CONCAT('%',#{proCode},'%')
+			</if>
+			<if test="proName != null">
+				AND proName LIKE CONCAT('%',#{proName},'%')
+			</if>
+		</where> 
+		limit #{index},#{size}
+	</select>
+	<!-- 获取供应商总数量 -->
+	<select id="findProCount" resultType="Integer" parameterType="hashMap">
+		select count(1) from smbms_provider
+		<where>
+			<if test="proCode != null">
+				AND proCode LIKE CONCAT('%',#{proCode},'%')
+			</if>
+			<if test="proName != null">
+				AND proName LIKE CONCAT('%',#{proName},'%')
+			</if>
+		</where> 
+	</select>
+	<!-- 添加 -->
+	<insert id="addPro" parameterType="Provider">
+		INSERT INTO smbms_provider(proCode,proName,proDesc,proContact,proPhone,proAddress,proFax,createdBy,creationDate)
+		VALUES(#{proCode},#{proName},#{proDesc},#{proContact},#{proPhone},#{proAddress},#{proFax},1,NOW())
+	</insert>
+	<!-- 根据id查询供应商 -->
+	<select id="findById" resultType="Provider" parameterType="Integer">
+		select * from smbms_provider where id = #{id}
+	</select>
+	<!-- 修改 -->
+	<update id="updatePro">
+		UPDATE smbms_provider
+		<trim prefix="set" suffix=",modifyBy = 1,modifyDate = NOW()" suffixOverrides=",">
+			<if test="proCode != null">proCode = #{proCode},</if>
+			<if test="proName != null">proName = #{proName},</if>
+			<if test="proDesc != null">proDesc = #{proDesc},</if>
+			<if test="proContact != null">proContact = #{proContact},</if>
+			<if test="proPhone != null">proPhone = #{proPhone},</if>
+			<if test="proAddress != null">proAddress = #{proAddress},</if>
+			<if test="proFax != null">proFax = #{proFax},</if>
+		</trim>
+		WHERE id = #{id}
+	</update>
+	<!-- 删除 -->
+	<delete id="deletePro" parameterType="Integer">
+		DELETE FROM smbms_provider WHERE id = #{id}
+	</delete>	
+	<!-- 判断是否有与该供应商关联的订单 -->
+	<select id="findProOrBillById" resultType="Integer" parameterType="Integer">
+		SELECT COUNT(*) FROM smbms_provider p
+		INNER JOIN smbms_bill b ON p.id = b.providerId
+		WHERE p.id = #{id}
+	</select>
+</mapper>
