@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.appinfo.mapper.BackendUserMapper">
+	<!-- （登录） -->
+	<select id="findByObject" resultType="BackendUser" parameterType="hashMap">
+		SELECT bu.*,dd.valueName as userTypeName FROM backend_user bu
+		INNER JOIN data_dictionary dd on dd.id = bu.userType
+		<trim prefix=" WHERE 1=1" prefixOverrides=" AND">
+			<if test="userCode != null">
+				AND userCode = #{userCode}
+			</if>
+			<if test="id != null">
+				AND id = #{id}
+			</if>
+		</trim>
+	</select>
+	
+	<!-- 动态查询+分页 -->
+	<select id="getAppInfoList" resultType="AppInfo" parameterType="hashMap">
+		select a.id, a.softwareName,a.APKName,a.supportROM,a.softwareSize,a.devId,
+				(select devName from dev_user where id = a.devId) as devName,
+				a.status,
+				(select valueName from data_dictionary d where  a.status=d.valueId AND d.typeCode='APP_STATUS') as statusName,
+				a.flatformId,
+				(select valueName from data_dictionary d where  a.flatformId=d.valueId AND d.typeCode='APP_FLATFORM') as flatformName,
+				a.categoryLevel1,
+				(select categoryName from app_category c where  c.id=a.categoryLevel1) as categoryLevel1Name,
+				a.categoryLevel2,
+				(select categoryName from app_category c where  c.id=a.categoryLevel2) as categoryLevel2Name,
+				a.categoryLevel3,
+				(select categoryName from app_category c where  c.id=a.categoryLevel3) as categoryLevel3Name,
+				a.downloads,
+				a.onSaleDate,
+				a.versionId,
+				(select v.versionNo from app_version v where v.id=a.versionId ) as versionNo
+			from  app_info a 
+		<trim prefix="where" prefixOverrides="and | or">
+			<if test="softwareName != null and softwareName != ''">
+				and a.softwareName like CONCAT ('%',#{softwareName},'%')
+			</if>
+			<if test="status != null">
+				and a.status = #{status}
+			</if>
+			<if test="categoryLevel1 != null">
+				and a.categoryLevel1 = #{categoryLevel1}
+			</if>
+			<if test="categoryLevel2 != null">
+				and a.categoryLevel2 = #{categoryLevel2}
+			</if>
+			<if test="categoryLevel3 != null">
+				and a.categoryLevel3 = #{categoryLevel3}
+			</if>
+			<if test="flatformId != null">
+				and a.flatformId = #{flatformId}
+			</if>
+			<if test="devId != null">
+				and a.devId = #{devId}
+			</if>
+		</trim>
+		order by creationDate DESC limit #{index},#{size}
+	</select>
+	<!-- 获取记录数 -->
+	<select id="getAppInfoCount" resultType="Integer" parameterType="hashMap">
+		select count(*) as count from app_info a
+			<trim prefix="where" prefixOverrides="and | or">
+				<if test="softwareName != null and softwareName != ''">
+					and a.softwareName like CONCAT ('%',#{softwareName},'%')
+				</if>
+				<if test="status != null">
+					and a.status = #{status}
+				</if>
+				<if test="categoryLevel1 != null">
+					and a.categoryLevel1 = #{categoryLevel1}
+				</if>
+				<if test="categoryLevel2 != null">
+					and a.categoryLevel2 = #{categoryLevel2}
+				</if>
+				<if test="categoryLevel3 != null">
+					and a.categoryLevel3 = #{categoryLevel3}
+				</if>
+				<if test="flatformId != null">
+					and a.flatformId = #{flatformId}
+				</if>
+				<if test="devId != null">
+					and a.devId = #{devId}
+				</if>
+			</trim>
+	</select>
+	<!-- 根据id获取APP信息 -->
+	<select id="getAppInfo" resultType="AppInfo">
+		select * ,
+			(select devName from dev_user where id = a.devId) as devName,
+			(select valueName from data_dictionary d where  a.status=d.valueId AND d.typeCode='APP_STATUS') as statusName,
+			(select valueName from data_dictionary d where  a.status=d.valueId AND d.typeCode='APP_FLATFORM') as flatformName,
+			(select categoryName from app_category c where  c.id=a.categoryLevel1) as categoryLevel1Name,
+			(select categoryName from app_category c where  c.id=a.categoryLevel2) as categoryLevel2Name,
+			(select categoryName from app_category c where  c.id=a.categoryLevel3) as categoryLevel3Name,
+			(select v.versionNo from app_version v where v.id=a.versionId ) as versionNo
+		  from app_info a
+		  <trim prefix="where" prefixOverrides="and | or">
+				<if test="id != null">
+					and a.id = #{id}
+				</if>
+				<if test="APKName != null">
+					and a.APKName = #{APKName}
+				</if>
+		  </trim>
+	</select>
+	
+	<!-- 获取版本号 -->
+	<select id="getAppVersionById" resultType="AppVersion" parameterType="Integer">
+		SELECT * FROM app_version WHERE id = #{id}
+	</select>
+	
+	<update id="updateAppStatus">
+		update app_info set status=#{statusId} where id = #{id}
+	</update>
+	
+</mapper>

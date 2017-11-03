@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.appinfo.mapper.DevUserMapper">
+	<select id="findByObject" resultType="DevUser" parameterType="hashMap">
+		SELECT * FROM dev_user
+		<trim prefix=" WHERE 1=1" prefixOverrides=" AND">
+			<if test="userCode != null">
+				AND devCode = #{devCode}
+			</if>
+			<if test="id != null">
+				AND id = #{id}
+			</if>
+		</trim>
+	</select>
+	
+	<insert id="addAppInfo" parameterType="AppInfo">
+		insert into app_info
+		<trim prefix="(" suffix=")"
+			 suffixOverrides=",">
+			<if test="softwareName!=null">softwareName,</if>
+			<if test="APKName!=null">APKName,</if>
+			<if test="supportROM!=null">supportROM,</if>
+			<if test="interfaceLanguage!=null">interfaceLanguage,</if>
+			<if test="updateDate!=null">updateDate,</if>
+			<if test="softwareSize!=null">softwareSize,</if>
+			<if test="devId!=null">devId,</if>
+			<if test="appInfo!=null">appInfo,</if>
+			<if test="status!=null">status,</if>
+			<if test="onSaleDate!=null">onSaleDate,</if>
+			<if test="offSaleDate!=null">offSaleDate,</if>
+			<if test="categoryLevel1!=null">categoryLevel1,</if>
+			<if test="categoryLevel2!=null">categoryLevel2,</if>
+			<if test="categoryLevel3!=null">categoryLevel3,</if>
+			<if test="downloads!=null">downloads,</if>
+			<if test="flatformId!=null">flatformId,</if>
+			<if test="logoPicPath!=null">logoPicPath,</if>
+			<if test="logoLocPath!=null">logoLocPath,</if>
+			<if test="createdBy!=null">createdBy,</if>
+			<if test="creationDate!=null">creationDate,</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" 
+			suffixOverrides=",">
+			<if test="softwareName!=null">#{softwareName},</if>
+			<if test="APKName!=null">#{APKName},</if>
+			<if test="supportROM!=null">#{supportROM},</if>
+			<if test="interfaceLanguage!=null">#{interfaceLanguage},</if>
+			<if test="updateDate!=null">#{updateDate},</if>
+			<if test="softwareSize!=null">#{softwareSize},</if>
+			<if test="devId!=null">#{devId},</if>
+			<if test="appInfo!=null">#{appInfo},</if>
+			<if test="status!=null">#{status},</if>
+			<if test="onSaleDate!=null">#{onSaleDate},</if>
+			<if test="offSaleDate!=null">#{offSaleDate},</if>
+			<if test="categoryLevel1!=null">#{categoryLevel1},</if>
+			<if test="categoryLevel2!=null">#{categoryLevel2},</if>
+			<if test="categoryLevel3!=null">#{categoryLevel3},</if>
+			<if test="downloads!=null">#{downloads},</if>
+			<if test="flatformId!=null">#{flatformId},</if>
+			<if test="logoPicPath!=null">#{logoPicPath},</if>
+			<if test="logoLocPath!=null">#{logoLocPath},</if>
+			<if test="createdBy!=null">#{createdBy},</if>
+			<if test="creationDate!=null">#{creationDate },</if>
+		</trim>	
+	</insert>
+	
+	<select id="getAppVersion" resultType="AppVersion" parameterType="Integer">
+		select v.*,
+			(select a.softwareName from app_info a where a.id=v.appId ) as appName,
+			(select valueName from data_dictionary d where  v.publishStatus=d.valueId AND d.typeCode='PUBLISH_STATUS') as publishStatusName
+			from  app_version  v
+		<trim prefix="where" prefixOverrides="and | or">
+			<if test="appinfoid != null">
+				and v.appId = #{appinfoid}
+			</if>
+		</trim>
+		order by v.creationDate DESC
+	</select>
+	
+	<insert id="saveAppVersion" parameterType="AppVersion" useGeneratedKeys="true" keyProperty="id">
+		insert into app_version 
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="appId != null">appId,</if>
+			<if test="versionNo != null">versionNo,</if>
+			<if test="versionInfo != null">versionInfo,</if>
+			<if test="publishStatus != null">publishStatus,</if>
+			<if test="downloadLink != null">downloadLink,</if>
+			<if test="versionSize != null">versionSize,</if>
+			<if test="apkLocPath != null">apkLocPath,</if>
+			<if test="apkFileName != null">apkFileName,</if>
+			<if test="createdBy != null">createdBy,</if>
+			<if test="creationDate != null">creationDate,</if>
+		</trim>
+		values 
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="appId != null">#{appId},</if>
+			<if test="versionNo != null">#{versionNo},</if>
+			<if test="versionInfo != null">#{versionInfo},</if>
+			<if test="publishStatus != null">#{publishStatus},</if>
+			<if test="downloadLink != null">#{downloadLink},</if>
+			<if test="versionSize != null">#{versionSize},</if>
+			<if test="apkLocPath != null">#{apkLocPath},</if>
+			<if test="apkFileName != null">#{apkFileName},</if>
+			<if test="createdBy != null">#{createdBy},</if>
+			<if test="creationDate != null">#{creationDate},</if>
+		</trim>
+	</insert>
+	
+	<update id="updateAppVersionId">
+		update app_info set versionId=#{versionId} where id = #{id}
+	</update>
+	<select id="getAppVersionById" resultType="AppVersion">
+		select * from app_version where id = #{versionId}
+	</select>
+	
+	<update id="updateAppVersion" parameterType="AppVersion">
+		update app_version
+		<trim prefix="set" suffixOverrides="," suffix="where id=#{id}">
+			<if test="versionNo != null">versionNo=#{versionNo},</if>
+			<if test="versionInfo != null">versionInfo=#{versionInfo},</if>
+			<if test="publishStatus != null">publishStatus=#{publishStatus},</if>
+			<if test="downloadLink != null">downloadLink=#{downloadLink},</if>
+			<if test="apkLocPath != null">apkLocPath=#{apkLocPath},</if>
+			<if test="versionSize != null">versionSize=#{versionSize},</if>
+			<if test="apkFileName != null">apkFileName=#{apkFileName},</if>
+			<if test="modifyBy != null">modifyBy=#{modifyBy},</if>
+			<if test="modifyDate != null">modifyDate=#{modifyDate},</if>
+		</trim>
+	</update>
+	
+	<select id="getVersionCountByAppId" resultType="Integer">
+		select count(*) from app_version where appId = #{appinfoid}
+	</select>
+	
+	<delete id="deleteVersionByAppId" parameterType="Integer"> 
+		delete from app_version where appId = #{appinfoid}
+	</delete>
+	
+	<delete id="deleteApp" parameterType="Integer">
+		delete from app_info where id = #{appinfoid}
+	</delete>
+	
+	<update id="deleteApkLogo" parameterType="Integer">
+		update app_version set apkLocPath=null,downloadLink=null,apkFileName=null where id = #{id}
+	</update>
+	
+	<update id="deleteAppLogo" parameterType="Integer">
+		update app_info set logoPicPath=null,logoLocPath = null where id = #{id}
+	</update>
+	
+	<update id="updateAppInfo" parameterType="AppInfo">
+		update app_info
+		<trim prefix="set" suffixOverrides="," suffix="where id=#{id}">
+			<if test="softwareName != null">softwareName=#{softwareName},</if>
+			<if test="supportROM != null">supportROM=#{supportROM},</if>
+			<if test="interfaceLanguage != null">interfaceLanguage=#{interfaceLanguage},</if>
+			<if test="updateDate != null">updateDate=#{updateDate},</if>
+			<if test="softwareSize != null">softwareSize=#{softwareSize},</if>
+			<if test="appInfo != null">appInfo=#{appInfo},</if>
+			<if test="status != null">status=#{status},</if>
+			<if test="onSaleDate != null">onSaleDate=#{onSaleDate},</if>
+			<if test="offSaleDate != null">offSaleDate=#{offSaleDate},</if>
+			<if test="categoryLevel1 != null">categoryLevel1=#{categoryLevel1},</if>
+			<if test="categoryLevel2 != null">categoryLevel2=#{categoryLevel2},</if>
+			<if test="categoryLevel3 != null">categoryLevel3=#{categoryLevel3},</if>
+			<if test="downloads != null">downloads=#{downloads},</if>
+			<if test="flatformId != null">flatformId=#{flatformId},</if>
+			<if test="logoPicPath != null">logoPicPath=#{logoPicPath},</if>
+			<if test="logoLocPath != null">logoLocPath=#{logoLocPath},</if>
+			<if test="modifyBy != null">modifyBy=#{modifyBy},</if>
+			<if test="modifyDate != null">modifyDate=#{modifyDate},</if>
+		</trim>
+	</update>
+	
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+
+	<!-- 导入SQL资源文件 -->
+	<context:property-placeholder location="classpath:database.properties" />
+	<!-- DataSource -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${mysql.driver}" />
+		<property name="url" value="${mysql.url}" />
+		<property name="username" value="${mysql.dbUserName}" />
+		<property name="password" value="${mysql.dbPassword}" />		
+		<property name="initialSize" value="${mysql.initialSize}"/> <!-- 初始连接数 -->		
+		<property name="maxActive" value="${mysql.maxActive}"/> <!-- 最大连接数 -->		
+		<property name="maxIdle" value="${mysql.maxIdle}"/> <!-- 最大空闲连接数 -->		
+		<property name="minIdle" value="${mysql.minIdle}"/> <!-- 最小连接数 -->		
+		<property name="maxWait" value="${mysql.maxWait}"/> <!-- 最大等待连接时间 -->		
+		<property name="removeAbandoned" value="${mysql.removeAbandoned}"/> <!-- 是否启用无用连接回收 -->		
+		<property name="removeAbandonedTimeout" value="${mysql.removeAbandonedTimeout}"/> <!-- 超出配置时间后回收无用连接 -->
+		<!-- SQL心跳 -->		
+		<property name="testWhileIdle" value="true"/> <!-- 是否开启Evict定时校验 -->		
+		<property name="testOnBorrow" value="true"/> <!--对拿到的连接是否进行校验  -->		
+		<property name="testOnReturn" value="true"/> <!-- 对返回的连接是否进行校验 -->		
+		<property name="validationQuery" value="select 1"/> <!-- 用于校验的SQL语句 -->		
+		<property name="timeBetweenEvictionRunsMillis" value="60000"/> <!-- Evict时间间隔 -->
+		<property name="numTestsPerEvictionRun" value="${mysql.maxActive}"/> <!-- 每次校验连接数量 -->
+	</bean>
+
+	<!-- SqlSessionFactory工厂 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="typeAliasesPackage" value="cn.appinfo.pojo" />
+		<property name="mapperLocations">
+			<list>
+				<value>
+					classpath:cn/appinfo/mapper/xml/*.xml
+				</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- 接口扫描 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="cn.appinfo.mapper" />
+	</bean>
+
+	<!-- 扫描service -->
+	<context:component-scan base-package="cn.appinfo.service" />
+
+	<!-- 事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- 事务规则 -->
+	<tx:advice id="txAdvice">
+		<tx:attributes>
+			<tx:method name="find*" read-only="true" />
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="load*" read-only="true" />
+
+			<tx:method name="save*" propagation="REQUIRED" />
+			<tx:method name="update*" propagation="REQUIRED" />
+			<tx:method name="delete*" propagation="REQUIRED" />
+			<tx:method name="add*" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+
+	<!-- AOP切面 -->
+	<aop:config>
+		<aop:pointcut expression="execution(* cn.appinfo.service.*.*(..))"
+			id="pointcut" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut" />
+	</aop:config>
+</beans>
